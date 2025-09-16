@@ -1,4 +1,4 @@
-package com.saraiva.rick_n_morty.ui.splash
+package com.saraiva.rick_n_morty.ui.screens.splash
 
 import androidx.lifecycle.ViewModel
 import com.saraiva.rick_n_morty.domain.usecase.GetCharactersUseCase

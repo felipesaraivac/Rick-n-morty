@@ -60,6 +60,7 @@ dependencies {
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.vectordrawable.animated)
     implementation(libs.coil.compose)
+    implementation(libs.coil.network.okhttp)
     implementation(libs.androidx.hilt.navigation)
     ksp(libs.androidx.hilt.compiler)
     implementation( libs.hilt.android)

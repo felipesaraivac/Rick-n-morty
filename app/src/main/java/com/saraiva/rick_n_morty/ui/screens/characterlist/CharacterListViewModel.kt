@@ -1,4 +1,4 @@
-package com.saraiva.rick_n_morty.ui.characterlist
+package com.saraiva.rick_n_morty.ui.screens.characterlist
 
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
@@ -18,7 +18,7 @@ class CharacterListViewModel @Inject constructor(
     private val getCharactersUseCase: GetCharactersUseCase,
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
-    
+
     val characters = mutableStateListOf<Character>()
     val listState = mutableStateOf(ListState.IDLE)
 
