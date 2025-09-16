@@ -255,7 +255,7 @@ val unspecified_scheme = ColorFamily(
 
 val LocalSizing = staticCompositionLocalOf { Sizing }
 
-val sizing get() = LocalSizing.current
+val sizing @Composable get() = LocalSizing.current
 
 @Composable
 fun RNMTheme(

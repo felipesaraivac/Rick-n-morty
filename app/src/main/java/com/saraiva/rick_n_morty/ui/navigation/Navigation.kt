@@ -11,6 +11,8 @@ import com.saraiva.rick_n_morty.ui.navigation.Screen
 import com.saraiva.rick_n_morty.ui.splash.SplashScreen
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.seconds
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.saraiva.rick_n_morty.ui.characterlist.CharacterListViewModel
 
 @Composable
 fun SetupNavController(navController: NavHostController) {
@@ -23,7 +25,7 @@ fun SetupNavController(navController: NavHostController) {
             }
         }
         composable(route = Screen.CharacterScreen.route) {
-            CharacterListScreen(navHostController = navController, viewModel())
+            CharacterListScreen(navHostController = navController, hiltViewModel<CharacterListViewModel>())
         }
 //        composable(route = Screen.QRScreen.route) {
 //            QrScreen(navHostController = navController, mainViewModel = viewModel)

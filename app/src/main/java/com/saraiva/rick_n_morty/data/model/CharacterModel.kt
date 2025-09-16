@@ -1,5 +1,8 @@
 package com.saraiva.rick_n_morty.data.model
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class CharacterModel(
     val id: Int,
     val name: String,
@@ -15,6 +18,7 @@ data class CharacterModel(
     val created: String
 )
 
+@Serializable
 data class LocationInfo(
     val name: String,
     val url: String
