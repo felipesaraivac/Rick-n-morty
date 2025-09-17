@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -30,22 +31,32 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavHostController
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.saraiva.rick_n_morty.R
 import com.saraiva.rick_n_morty.data.model.Character
 import com.saraiva.rick_n_morty.data.model.Episode
+import com.saraiva.rick_n_morty.ui.components.DefaultTopBar
 import com.saraiva.rick_n_morty.ui.components.FullPageLoadingIndicator
 import com.saraiva.rick_n_morty.ui.components.InfoTable
 import com.saraiva.rick_n_morty.ui.theme.sizing
 import java.util.Locale
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CharacterDetailsScreen(viewModel: CharacterDetailsViewModel = hiltViewModel()) {
+fun CharacterDetailsScreen(
+    navController: NavHostController,
+    viewModel: CharacterDetailsViewModel = hiltViewModel()
+) {
     val state = viewModel.state.collectAsStateWithLifecycle()
 
-    Scaffold { paddingValues ->
+    Scaffold(topBar = {
+        DefaultTopBar("Rick N Morty") {
+            navController.popBackStack()
+        }
+    }){ paddingValues ->
         val finalState = state.value
         when {
             !finalState.isLoading

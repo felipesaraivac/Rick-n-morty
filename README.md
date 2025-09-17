@@ -1,23 +1,23 @@
-# Rick-n-morty — Aplicativo Kotlin/Java com Gradle
+# Rick-n-morty — Kotlin/Java App with Gradle
 
-Este repositório contém um aplicativo desenvolvido em **Kotlin** e **Java**, utilizando o **Gradle** como sistema de build.
+This repository contains an application developed in **Kotlin**.
 
-## Estrutura do Projeto
+## Project Structure
 
-- `src/main/kotlin` — Código-fonte Kotlin do app
-- `src/main/java` — Código-fonte Java do app
-- `build.gradle` — Configuração do Gradle
-- `app/` — Diretório principal do aplicativo Android
+- `src/main/kotlin` — Kotlin source code of the app
+- `src/main/java` — Java source code of the app
+- `build.gradle` — Gradle configuration
+- `app/` — Main directory of the Android application
 
-## Como Executar
+## How to Run
 
-1. Instale o [JDK](https://adoptium.net/) e o [Android Studio](https://developer.android.com/studio).
-2. Clone o repositório:
+1. Install the [JDK](https://openjdk.org/) and [Android Studio](https://developer.android.com/studio).
+2. Clone the repository:
    ```sh
    git clone git@github.com:felipesaraivac/Rick-n-morty.git
    ```
-3. Abra o projeto no Android Studio.
-4. Execute o aplicativo em um emulador ou dispositivo físico.
+3. Open the project in Android Studio.
+4. Run the app on an emulator or physical device.
 
 ## Added
 

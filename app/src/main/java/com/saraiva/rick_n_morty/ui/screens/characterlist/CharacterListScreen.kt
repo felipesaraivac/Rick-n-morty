@@ -1,5 +1,7 @@
 package com.saraiva.rick_n_morty.ui.screens.characterlist
 
+import android.app.Activity
+import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -15,14 +17,17 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -34,6 +39,7 @@ import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.saraiva.rick_n_morty.data.model.Character
+import com.saraiva.rick_n_morty.ui.components.DefaultTopBar
 import com.saraiva.rick_n_morty.ui.components.FullPageLoadingIndicator
 import com.saraiva.rick_n_morty.ui.components.InfiniteListHandler
 import com.saraiva.rick_n_morty.ui.navigation.Screen
@@ -42,9 +48,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CharacterListScreen(
-    navHostController: NavHostController, viewModel: CharacterListViewModel = hiltViewModel()
+    navHostController: NavHostController,
+    viewModel: CharacterListViewModel = hiltViewModel(),
+    context: Context = LocalContext.current
 ) {
 
     val viewState = viewModel.state.collectAsStateWithLifecycle()
@@ -52,16 +61,27 @@ fun CharacterListScreen(
     val effects = viewModel.effect.collectAsStateWithLifecycle(null)
 
     LaunchedEffect(effects.value) {
+        if (effects.value is CharacterListEffects.Backpress) (context as Activity).finish()
         val characterId = (effects.value as? CharacterListEffects.OpenCharacterDetail)?.character
             ?: return@LaunchedEffect
-            navHostController.navigate(Screen.CharacterScreen.createRoute(characterId))
+        navHostController.navigate(Screen.CharacterScreen.createRoute(characterId))
     }
 
-    Scaffold { paddingValues ->
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+
+    Scaffold(
+        topBar = {
+            DefaultTopBar(title = "Rick N Morty", scrollBehavior = scrollBehavior) {
+                viewModel.processEvent(CharacterListEvents.OnBackpress)
+            }
+        }
+    ) { paddingValues ->
         val state = viewState.value
         when {
             !state.isLoading -> CharacterList(
-                modifier = Modifier.padding(paddingValues),
+                modifier = Modifier
+                    .padding(paddingValues)
+                    .nestedScroll(scrollBehavior.nestedScrollConnection),
                 characters = state.characters,
                 onEndReached = {
                     CoroutineScope(Dispatchers.Default).launch {
@@ -73,6 +93,7 @@ fun CharacterListScreen(
                     viewModel.processEvent(CharacterListEvents.OnCharacterClick(character))
                 }
             )
+
             state.isLoading -> FullPageLoadingIndicator()
 
         }
@@ -169,7 +190,10 @@ fun CharacterItem(
                         )
                 )
             }
-            HorizontalDivider(color = MaterialTheme.colorScheme.onSecondaryContainer, thickness = sizing.spacingXXS)
+            HorizontalDivider(
+                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                thickness = sizing.spacingXXS
+            )
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
