@@ -8,15 +8,13 @@ import com.saraiva.rick_n_morty.data.CharacterRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class CharacterDetailsViewModel @Inject constructor(
     private val characterRepository: CharacterRepository,
-    private val savedStateHandle: SavedStateHandle
+    savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
     val characterId: Int = savedStateHandle["characterId"] ?: 0
@@ -46,7 +44,7 @@ class CharacterDetailsViewModel @Inject constructor(
         }
     }
 
-    fun getCharacter() {
+    private fun getCharacter() {
         viewModelScope.launch {
             characterRepository.getCharacterById(characterId).collect { character ->
                 val viewState = _state.value.copy(
@@ -61,7 +59,7 @@ class CharacterDetailsViewModel @Inject constructor(
         }
     }
 
-    fun getEpisodes(ids: List<Int>) {
+    private fun getEpisodes(ids: List<Int>) {
         viewModelScope.launch {
             characterRepository.getEpisodeList(ids).collect { episodes ->
                 val viewState = _state.value.copy(

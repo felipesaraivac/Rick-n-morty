@@ -2,7 +2,6 @@ package com.saraiva.rick_n_morty.ui.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -10,9 +9,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import com.saraiva.rick_n_morty.ui.screens.character.CharacterDetailsScreen
-import com.saraiva.rick_n_morty.ui.screens.character.CharacterDetailsViewModel
 import com.saraiva.rick_n_morty.ui.screens.characterlist.CharacterListScreen
-import com.saraiva.rick_n_morty.ui.screens.characterlist.CharacterListViewModel
 import com.saraiva.rick_n_morty.ui.screens.splash.SplashScreen
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.seconds

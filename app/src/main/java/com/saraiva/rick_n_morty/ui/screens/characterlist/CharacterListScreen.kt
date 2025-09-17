@@ -40,7 +40,6 @@ import com.saraiva.rick_n_morty.ui.navigation.Screen
 import com.saraiva.rick_n_morty.ui.theme.sizing
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 @Composable

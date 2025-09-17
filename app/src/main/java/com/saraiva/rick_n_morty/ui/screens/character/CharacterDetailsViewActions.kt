@@ -19,11 +19,6 @@ data class CharacterDetailsState(
     }
 }
 
-sealed class CharacterDetailsEffects {
-    object Loading : CharacterDetailsEffects()
-    object Error : CharacterDetailsEffects()
-}
-
 sealed class CharacterDetailsEvents {
     object LoadCharacter : CharacterDetailsEvents()
     data class LoadEpisodes(val character: Character) : CharacterDetailsEvents()
