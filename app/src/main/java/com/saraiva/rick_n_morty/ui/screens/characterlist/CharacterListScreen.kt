@@ -20,6 +20,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
@@ -47,6 +48,12 @@ fun CharacterListScreen(
     val viewState = viewModel.state.collectAsStateWithLifecycle()
     val characters = viewModel.characters
 
+    val onClickListener: (Character) -> Unit = { character: Character ->
+        CoroutineScope(Dispatchers.Default).launch {
+            viewModel.processEvent(CharacterListEvents.OnCharacterClick(character))
+        }
+    }
+
     Scaffold { paddingValues ->
         when (viewState.value) {
             CharacterListEffects.EndPagination -> CharacterList(
@@ -57,11 +64,7 @@ fun CharacterListScreen(
                         viewModel.processEvent(CharacterListEvents.LoadMoreCharacters)
                     }
                 },
-                onCharacterClick = { character ->
-                    CoroutineScope(Dispatchers.Default).launch {
-                        viewModel.processEvent(CharacterListEvents.OnCharacterClick(character))
-                    }
-                }
+                onCharacterClick = onClickListener
             )
 
             CharacterListEffects.Error -> TODO()
@@ -69,13 +72,16 @@ fun CharacterListScreen(
             is CharacterListEffects.OpenCharacterDetail -> {
                 val effect = viewState.value as CharacterListEffects.OpenCharacterDetail
                 navHostController.navigate(Screen.CharacterScreen.createRoute(effect.character.id))
+                viewModel.resetState()
                 FullPageLoadingIndicator()
             }
 
             CharacterListEffects.Paginating -> CharacterList(
                 modifier = Modifier.padding(
                     paddingValues
-                ), characters = characters, paginating = true
+                ), characters = characters,
+                paginating = true,
+                onCharacterClick = onClickListener
             )
         }
     }
@@ -94,6 +100,7 @@ fun CharacterList(
     LazyVerticalGrid(
         columns = GridCells.Adaptive(sizing.minCardWidth),
         horizontalArrangement = Arrangement.SpaceAround,
+        verticalArrangement = Arrangement.spacedBy(sizing.spacingXS),
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)

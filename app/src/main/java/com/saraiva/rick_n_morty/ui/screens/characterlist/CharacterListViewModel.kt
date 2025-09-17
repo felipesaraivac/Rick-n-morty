@@ -75,4 +75,10 @@ class CharacterListViewModel @Inject constructor(
             }
         }
     }
+
+    fun resetState() {
+        viewModelScope.launch {
+            _state.emit(CharacterListEffects.EndPagination)
+        }
+    }
 }

@@ -4,24 +4,21 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CardElevation
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -31,17 +28,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import com.saraiva.rick_n_morty.R
 import com.saraiva.rick_n_morty.data.model.Character
+import com.saraiva.rick_n_morty.data.model.Episode
 import com.saraiva.rick_n_morty.ui.components.FullPageLoadingIndicator
+import com.saraiva.rick_n_morty.ui.components.InfoTable
 import com.saraiva.rick_n_morty.ui.theme.sizing
+import java.util.Locale
 
 @Composable
 fun CharacterDetailsScreen(
@@ -58,7 +59,7 @@ fun CharacterDetailsScreen(
                     modifier = Modifier.padding(
                         paddingValues
                     ),
-                    character = character
+                    viewState = character
                 )
             }
 
@@ -70,7 +71,7 @@ fun CharacterDetailsScreen(
 }
 
 @Composable
-fun CharacterSection(modifier: Modifier, character: Character) {
+fun CharacterSection(modifier: Modifier, viewState: CharacterDetailsState) {
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -80,20 +81,25 @@ fun CharacterSection(modifier: Modifier, character: Character) {
         Card(
             modifier = Modifier
                 .fillMaxSize(),
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSecondaryContainer),
+            border = BorderStroke(sizing.borderWidth, MaterialTheme.colorScheme.onSecondaryContainer),
         ) {
 
             CharacterHeader(
                 modifier = Modifier,
-                character = character
+                character = viewState.character
             )
 
-            TableInfo(
+            InfoTable(
                 modifier = Modifier,
                 list = listOf(
-                    "origin" to character.origin.name,
-                    "status" to character.status
+                    stringResource(R.string.origin) to viewState.character.origin.name,
+                    stringResource(R.string.status) to viewState.character.status
                 )
+            )
+
+            EpisodeList(
+                modifier = Modifier,
+                episodes = viewState.episode
             )
         }
     }
@@ -122,7 +128,11 @@ fun CharacterHeader(
             modifier = Modifier
                 .size(sizing.profilePictureSize)
                 .clip(CircleShape)
-                .border(1.dp, MaterialTheme.colorScheme.onSecondaryContainer, CircleShape)
+                .border(
+                    sizing.borderWidth,
+                    MaterialTheme.colorScheme.onSecondaryContainer,
+                    CircleShape
+                )
                 .background(MaterialTheme.colorScheme.primaryContainer, CircleShape)
         )
 
@@ -146,49 +156,51 @@ fun CharacterHeader(
 }
 
 @Composable
-fun TableInfo(
+fun EpisodeList(
     modifier: Modifier = Modifier,
-    list: List<Pair<String, String>> = emptyList()
+    episodes: List<Episode>
 ) {
-    Card(
+    Column(
         modifier = modifier
             .fillMaxWidth()
             .padding(sizing.spacingM),
-        border = BorderStroke(sizing.borderWidth, MaterialTheme.colorScheme.onSecondaryContainer)
+        horizontalAlignment = Alignment.Start,
     ) {
+        Text(
+            text = stringResource(R.string.episodes).uppercase(Locale.getDefault()),
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.W700,
+            color = MaterialTheme.colorScheme.onBackground,
+            modifier = Modifier.padding(bottom = sizing.spacingS)
+        )
         LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.background)
+            verticalArrangement = Arrangement.spacedBy(sizing.spacingS),
+            modifier = Modifier.fillMaxWidth()
         ) {
-            items(list) {
-                Row {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth(.2f)
-                            .padding(sizing.spacingS),
-                        horizontalAlignment = Alignment.End,
-                        verticalArrangement = Arrangement.Center
+            itemsIndexed(episodes) { index, episode ->
+                Card(
+                    modifier = Modifier,
+                    border = BorderStroke(sizing.borderWidth, MaterialTheme.colorScheme.onSecondaryContainer),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.background
+                    ),
+                    elevation = CardDefaults.cardElevation(
+                        defaultElevation = sizing.spacingXS,
+                        pressedElevation = sizing.spacingXS,
+                        hoveredElevation = sizing.spacingXS,
+                        focusedElevation = sizing.spacingXS
+                    )
+                ) {
+                    Box(
+                        contentAlignment = Alignment.CenterStart,
+                        modifier = Modifier.fillMaxSize()
                     ) {
                         Text(
-                            text = it.first,
+                            text = "#${episode.id}: ${episode.name}",
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.W600,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-
-                    }
-                    Column(
-                        modifier = Modifier
-                            .padding(sizing.spacingS),
-                        horizontalAlignment = Alignment.Start,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Text(
-                            text = it.second,
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.W400,
-                            color = MaterialTheme.colorScheme.onSecondaryContainer
+                            color = MaterialTheme.colorScheme.onSecondaryContainer,
+                            modifier = Modifier.padding(sizing.spacingM)
                         )
                     }
                 }

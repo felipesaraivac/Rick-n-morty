@@ -8,6 +8,7 @@ import com.saraiva.rick_n_morty.data.model.response.PageData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -17,10 +18,10 @@ class CharacterRepository @Inject constructor(
     val inMemory: InMemoryDataSource
 ) {
 
-    suspend fun getCharacters(page: Int): Flow<PageData<Character>> {
+    suspend fun getCharacters(page: Int) = flow {
         val pageInfo = rickNMortyService.getCharacters(page)
         saveCharacters(pageInfo.results)
-        return flowOf(PageData(pageInfo.results.map {
+        emit(PageData(pageInfo.results.map {
             Character(
                 id = it.id,
                 name = it.name,
@@ -51,6 +52,10 @@ class CharacterRepository @Inject constructor(
             character
         }
         flowOf( inMemory.getCharacterById(id) ?: deff.await())
+    }
+
+    suspend fun getEpisodeList(ids: List<Int>) = flow {
+        emit(rickNMortyService.getEpisodesByIds(ids.joinToString(",")))
     }
 
 
