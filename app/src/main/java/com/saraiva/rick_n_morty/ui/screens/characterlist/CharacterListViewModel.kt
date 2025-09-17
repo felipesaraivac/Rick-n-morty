@@ -18,14 +18,15 @@ import javax.inject.Inject
 @HiltViewModel
 class CharacterListViewModel @Inject constructor(
     private val characterRepository: CharacterRepository,
-    private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    private var _state = MutableStateFlow<CharacterListEffects>(CharacterListEffects.Loading)
-    val state: StateFlow<CharacterListEffects> get() = _state
+    private var _state = MutableStateFlow(CharacterListState.initial())
+    val state: StateFlow<CharacterListState> get() = _state
+
+    private var _effect = MutableStateFlow<CharacterListEffects>(CharacterListEffects.NoOP)
+    val effect: StateFlow<CharacterListEffects> get() = _effect
 
     private val _characters = mutableStateListOf<Character>()
-    val characters: List<Character> get() = _characters
 
     private val listState = mutableStateOf(ListState.IDLE)
     private val page = mutableIntStateOf(1)
@@ -37,20 +38,26 @@ class CharacterListViewModel @Inject constructor(
         }
     }
 
-    suspend fun processEvent(event: CharacterListEvents) {
-        when (event) {
-            CharacterListEvents.LoadCharacters -> {
-                loadCharacters()
-                _state.emit(CharacterListEffects.Loading)
-            }
+    fun processEvent(event: CharacterListEvents) {
+        viewModelScope.launch {
+            when (event) {
+                CharacterListEvents.LoadCharacters -> {
+                    loadCharacters()
+                    _state.emit(_state.value.copy(isLoading = true))
+                }
 
-            CharacterListEvents.LoadMoreCharacters -> {
-                loadCharacters()
-                _state.emit(CharacterListEffects.Paginating)
-            }
+                CharacterListEvents.LoadMoreCharacters -> {
+                    loadCharacters()
+                    _state.emit(_state.value.copy(isPaginating = true))
+                }
 
-            is CharacterListEvents.OnCharacterClick -> {
-                _state.emit(CharacterListEffects.OpenCharacterDetail(event.character))
+                is CharacterListEvents.OnCharacterClick -> {
+                    _effect.emit(CharacterListEffects.OpenCharacterDetail(event.character.id))
+                }
+
+                CharacterListEvents.ResetState -> {
+                    resetState()
+                }
             }
         }
     }
@@ -71,14 +78,13 @@ class CharacterListViewModel @Inject constructor(
                 page.intValue++
                 listState.value = ListState.IDLE
                 hasMore.value = pageData.hasMore
-                _state.emit(CharacterListEffects.EndPagination)
+                _state.emit(_state.value.copy(_characters, isLoading = false, isPaginating = false))
             }
         }
     }
 
-    fun resetState() {
-        viewModelScope.launch {
-            _state.emit(CharacterListEffects.EndPagination)
-        }
+    fun resetState() = viewModelScope.launch {
+        _state.emit(_state.value.copy(isLoading = false, isPaginating = false, isError = false))
+        _effect.emit(CharacterListEffects.NoOP)
     }
 }

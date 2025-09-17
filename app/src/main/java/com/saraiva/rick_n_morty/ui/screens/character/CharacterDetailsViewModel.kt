@@ -8,6 +8,8 @@ import com.saraiva.rick_n_morty.data.CharacterRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -19,31 +21,57 @@ class CharacterDetailsViewModel @Inject constructor(
 
     val characterId: Int = savedStateHandle["characterId"] ?: 0
 
-    private val _state = MutableStateFlow<CharacterDetailsEffects>(CharacterDetailsEffects.Loading)
-    val state: StateFlow<CharacterDetailsEffects> get() = _state
-
+    private val _state = MutableStateFlow(CharacterDetailsState.initial())
+    val state: StateFlow<CharacterDetailsState> get() = _state
 
     init {
-        getCharacters()
-    }
-
-    fun getCharacters() = viewModelScope.launch {
-        characterRepository.getCharacterById(characterId).collect { character ->
-            getEpisodes(character.episode.map {
-                it.split("/").last().toInt()
-            }).collect { episodes ->
-                _state.emit(
-                    CharacterDetailsEffects.CharacterLoaded(
-                        CharacterDetailsState(
-                            character,
-                            episodes
-                        )
-                    )
-                )
+        viewModelScope.launch {
+            if (characterId == 0) {
+                _state.emit(CharacterDetailsState.initial().copy(isError = true, isLoading = false))
+            } else {
+                processEvent(CharacterDetailsEvents.LoadCharacter)
             }
         }
     }
 
-    suspend fun getEpisodes(ids: List<Int>) = characterRepository.getEpisodeList(ids)
+    fun processEvent(event: CharacterDetailsEvents) = viewModelScope.launch {
+        when (event) {
+            is CharacterDetailsEvents.LoadCharacter -> {
+                getCharacter()
+            }
 
+            is CharacterDetailsEvents.LoadEpisodes -> {
+                getEpisodes(event.character.episode.map { it.split("/").last().toInt() })
+            }
+        }
+    }
+
+    fun getCharacter() {
+        viewModelScope.launch {
+            characterRepository.getCharacterById(characterId).collect { character ->
+                val viewState = _state.value.copy(
+                    character = character,
+                    episodes = emptyList(),
+                    isLoading = true,
+                    isError = false
+                )
+                processEvent(CharacterDetailsEvents.LoadEpisodes(character))
+                _state.emit(viewState)
+            }
+        }
+    }
+
+    fun getEpisodes(ids: List<Int>) {
+        viewModelScope.launch {
+            characterRepository.getEpisodeList(ids).collect { episodes ->
+                val viewState = _state.value.copy(
+                    character = _state.value.character,
+                    episodes = episodes,
+                    isLoading = false,
+                    isError = false
+                )
+                _state.emit(viewState)
+            }
+        }
+    }
 }

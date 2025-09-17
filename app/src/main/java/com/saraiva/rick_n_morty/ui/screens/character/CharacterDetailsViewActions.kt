@@ -4,17 +4,27 @@ import com.saraiva.rick_n_morty.data.model.Character
 import com.saraiva.rick_n_morty.data.model.Episode
 
 data class CharacterDetailsState(
-    val character: Character,
-    val episode: List<Episode>
-)
+    val character: Character?,
+    val episodes: List<Episode>,
+    val isLoading: Boolean = false,
+    val isError: Boolean = false
+) {
+    companion object {
+        fun initial() = CharacterDetailsState(
+            character = null,
+            episodes = emptyList(),
+            isLoading = true,
+            isError = false
+        )
+    }
+}
 
 sealed class CharacterDetailsEffects {
-    data class CharacterLoaded(val character: CharacterDetailsState) : CharacterDetailsEffects()
     object Loading : CharacterDetailsEffects()
     object Error : CharacterDetailsEffects()
 }
 
 sealed class CharacterDetailsEvents {
-    object LoadCharacters : CharacterDetailsEvents()
-    data class OnCharacterClick(val character: Character) : CharacterDetailsEvents()
+    object LoadCharacter : CharacterDetailsEvents()
+    data class LoadEpisodes(val character: Character) : CharacterDetailsEvents()
 }

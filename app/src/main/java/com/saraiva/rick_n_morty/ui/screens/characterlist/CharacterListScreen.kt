@@ -1,8 +1,6 @@
 package com.saraiva.rick_n_morty.ui.screens.characterlist
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -49,43 +47,34 @@ fun CharacterListScreen(
 ) {
 
     val viewState = viewModel.state.collectAsStateWithLifecycle()
-    val characters = viewModel.characters
 
-    val onClickListener: (Character) -> Unit = { character: Character ->
-        CoroutineScope(Dispatchers.Default).launch {
-            viewModel.processEvent(CharacterListEvents.OnCharacterClick(character))
-        }
+    val effects = viewModel.effect.collectAsStateWithLifecycle()
+
+    LaunchedEffect(effects.value) {
+        val characterId = (effects.value as? CharacterListEffects.OpenCharacterDetail)?.character
+            ?: return@LaunchedEffect
+            navHostController.navigate(Screen.CharacterScreen.createRoute(characterId))
+            viewModel.processEvent(CharacterListEvents.ResetState)
     }
 
     Scaffold { paddingValues ->
-        when (viewState.value) {
-            CharacterListEffects.EndPagination -> CharacterList(
+        val state = viewState.value
+        when {
+            !state.isLoading -> CharacterList(
                 modifier = Modifier.padding(paddingValues),
-                characters = characters,
+                characters = state.characters,
                 onEndReached = {
                     CoroutineScope(Dispatchers.Default).launch {
                         viewModel.processEvent(CharacterListEvents.LoadMoreCharacters)
                     }
                 },
-                onCharacterClick = onClickListener
+                paginating = state.isPaginating,
+                onCharacterClick = { character ->
+                    viewModel.processEvent(CharacterListEvents.OnCharacterClick(character))
+                }
             )
+            state.isLoading -> FullPageLoadingIndicator()
 
-            CharacterListEffects.Error -> TODO()
-            CharacterListEffects.Loading -> FullPageLoadingIndicator()
-            is CharacterListEffects.OpenCharacterDetail -> {
-                val effect = viewState.value as CharacterListEffects.OpenCharacterDetail
-                navHostController.navigate(Screen.CharacterScreen.createRoute(effect.character.id))
-                viewModel.resetState()
-                FullPageLoadingIndicator()
-            }
-
-            CharacterListEffects.Paginating -> CharacterList(
-                modifier = Modifier.padding(
-                    paddingValues
-                ), characters = characters,
-                paginating = true,
-                onCharacterClick = onClickListener
-            )
         }
     }
 }

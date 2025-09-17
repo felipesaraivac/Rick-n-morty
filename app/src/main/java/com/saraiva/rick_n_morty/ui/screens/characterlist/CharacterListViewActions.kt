@@ -2,16 +2,30 @@ package com.saraiva.rick_n_morty.ui.screens.characterlist
 
 import com.saraiva.rick_n_morty.data.model.Character
 
+data class CharacterListState(
+    val characters: List<Character> = emptyList(),
+    val isLoading: Boolean,
+    val isPaginating: Boolean,
+    val isError: Boolean
+) {
+    companion object {
+        fun initial() = CharacterListState(
+            characters = emptyList(),
+            isLoading = true,
+            isPaginating = false,
+            isError = false
+        )
+    }
+}
+
 sealed class CharacterListEffects {
-    data class OpenCharacterDetail(val character: Character) : CharacterListEffects()
-    object Loading : CharacterListEffects()
-    object Paginating : CharacterListEffects()
-    object EndPagination : CharacterListEffects()
-    object Error : CharacterListEffects()
+    data class OpenCharacterDetail(val character: Int) : CharacterListEffects()
+    object NoOP : CharacterListEffects()
 }
 
 sealed class CharacterListEvents {
     object LoadCharacters : CharacterListEvents()
     object LoadMoreCharacters : CharacterListEvents()
+    object ResetState : CharacterListEvents()
     data class OnCharacterClick(val character: Character) : CharacterListEvents()
 }

@@ -6,8 +6,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -15,9 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -27,13 +23,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import coil3.compose.AsyncImage
@@ -54,25 +48,25 @@ fun CharacterDetailsScreen(
     val state = viewModel.state.collectAsStateWithLifecycle()
 
     Scaffold { paddingValues ->
-        when (state.value) {
-            is CharacterDetailsEffects.CharacterLoaded -> {
-                val character = (state.value as CharacterDetailsEffects.CharacterLoaded).character
+        val finalState = state.value
+        when {
+            !finalState.isLoading
+                    && finalState.character != null -> {
                 CharacterSection(
-                    modifier = Modifier.padding(
-                        paddingValues
-                    ), viewState = character
+                    modifier = Modifier.padding(paddingValues),
+                    character = finalState.character,
+                    episodes = finalState.episodes
                 )
             }
 
-            CharacterDetailsEffects.Error -> TODO()
-            CharacterDetailsEffects.Loading -> FullPageLoadingIndicator()
+            state.value.isLoading -> FullPageLoadingIndicator()
         }
 
     }
 }
 
 @Composable
-fun CharacterSection(modifier: Modifier, viewState: CharacterDetailsState) {
+fun CharacterSection(modifier: Modifier, character: Character, episodes: List<Episode>) {
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -87,18 +81,18 @@ fun CharacterSection(modifier: Modifier, viewState: CharacterDetailsState) {
         ) {
 
             CharacterHeader(
-                modifier = Modifier, character = viewState.character
+                modifier = Modifier, character = character
             )
 
             InfoTable(
                 modifier = Modifier, list = listOf(
-                    stringResource(R.string.origin) to viewState.character.origin.name,
-                    stringResource(R.string.status) to viewState.character.status
+                    stringResource(R.string.origin) to character.origin.name,
+                    stringResource(R.string.status) to character.status
                 )
             )
 
             EpisodeList(
-                modifier = Modifier, episodes = viewState.episode
+                modifier = Modifier, episodes = episodes
             )
         }
     }
@@ -182,7 +176,10 @@ fun EpisodeList(
                     shape = MaterialTheme.shapes.medium
                 ) {
                     Card(
-                        modifier = Modifier.padding(bottom = sizing.spacingXS, end = sizing.spacingXXS),
+                        modifier = Modifier.padding(
+                            bottom = sizing.spacingXS,
+                            end = sizing.spacingXXS
+                        ),
                         border = BorderStroke(
                             sizing.borderWidth, MaterialTheme.colorScheme.onSecondaryContainer
                         ),
