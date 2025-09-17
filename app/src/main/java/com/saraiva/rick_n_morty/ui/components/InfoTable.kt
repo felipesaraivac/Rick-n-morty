@@ -68,7 +68,7 @@ fun InfoTable(
                         verticalArrangement = Arrangement.Center
                     ) {
                         Text(
-                            text = it.second.capitalize(Locale.ROOT),
+                            text = it.second.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() },
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.W400,
                             color = MaterialTheme.colorScheme.onSecondaryContainer
