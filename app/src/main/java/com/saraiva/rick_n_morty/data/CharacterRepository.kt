@@ -55,7 +55,11 @@ class CharacterRepository @Inject constructor(
     }
 
     suspend fun getEpisodeList(ids: List<Int>) = flow {
-        emit(rickNMortyService.getEpisodesByIds(ids.joinToString(",")))
+        if (ids.size == 1) {
+            emit(listOf(rickNMortyService.getEpisodeById(ids.first())))
+        } else {
+            emit(rickNMortyService.getEpisodesByIds(ids.joinToString(",")))
+        }
     }
 
 
