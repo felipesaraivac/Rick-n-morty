@@ -18,3 +18,15 @@ Este repositório contém um aplicativo desenvolvido em **Kotlin** e **Java**, u
    ```
 3. Abra o projeto no Android Studio.
 4. Execute o aplicativo em um emulador ou dispositivo físico.
+
+## Added
+
+1. Character Listing
+2. Character Details
+3. MVI and MVVM
+4. Hilt Dependency Injection
+5. Deeplinks
+6. InMemoryDatasource
+
+https://github.com/user-attachments/assets/d8fb1fe2-a723-4d63-a1f7-0920b9528c4d
+
