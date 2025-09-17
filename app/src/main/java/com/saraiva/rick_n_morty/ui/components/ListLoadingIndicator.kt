@@ -5,6 +5,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
@@ -37,7 +38,7 @@ fun ListLoadingIndicator(isLoading: Boolean) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(sizing.spacingXL)
+                .fillMaxHeight()
         ) {
             DotLottieAnimation(
                 source = DotLottieSource.Res(R.raw.loading_searching),

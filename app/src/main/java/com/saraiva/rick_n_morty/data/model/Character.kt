@@ -1,5 +1,8 @@
-package com.saraiva.rick_n_morty.domain.model
+package com.saraiva.rick_n_morty.data.model
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class Character(
     val id: Int,
     val name: String,
@@ -15,6 +18,7 @@ data class Character(
     val created: String
 )
 
+@Serializable
 data class LocationInfo(
     val name: String,
     val url: String

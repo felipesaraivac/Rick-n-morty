@@ -1,13 +1,8 @@
 package com.saraiva.rick_n_morty.ui.screens.characterlist
 
-import android.util.Log
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,66 +10,73 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import coil3.compose.AsyncImage
-import coil3.compose.rememberAsyncImagePainter
-import coil3.request.ErrorResult
 import coil3.request.ImageRequest
-import coil3.request.SuccessResult
 import coil3.request.crossfade
-import coil3.request.placeholder
-import com.lottiefiles.dotlottie.core.compose.ui.DotLottieAnimation
-import com.lottiefiles.dotlottie.core.util.DotLottieSource
-import com.saraiva.rick_n_morty.R
-import com.saraiva.rick_n_morty.domain.model.Character
+import com.saraiva.rick_n_morty.data.model.Character
 import com.saraiva.rick_n_morty.ui.components.FullPageLoadingIndicator
-import com.saraiva.rick_n_morty.ui.state.ListState
+import com.saraiva.rick_n_morty.ui.components.InfiniteListHandler
+import com.saraiva.rick_n_morty.ui.navigation.Screen
 import com.saraiva.rick_n_morty.ui.theme.sizing
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @Composable
 fun CharacterListScreen(
-    navHostController: NavHostController,
-    viewModel: CharacterListViewModel
+    navHostController: NavHostController, viewModel: CharacterListViewModel
 ) {
-    Scaffold { paddingValues ->
-        val list = viewModel.characters
-        val listState = viewModel.listState
-        when (listState.value) {
-            ListState.IDLE -> {
-                CharacterList(modifier = Modifier.padding(paddingValues), characters = list)
-            }
 
-            ListState.LOADING -> {
+    val viewState = viewModel.state.collectAsStateWithLifecycle()
+    val characters = viewModel.characters
+
+    Scaffold { paddingValues ->
+        when (viewState.value) {
+            CharacterListEffects.EndPagination -> CharacterList(
+                modifier = Modifier.padding(paddingValues),
+                characters = characters,
+                onEndReached = {
+                    CoroutineScope(Dispatchers.Default).launch {
+                        viewModel.processEvent(CharacterListEvents.LoadMoreCharacters)
+                    }
+                },
+                onCharacterClick = { character ->
+                    CoroutineScope(Dispatchers.Default).launch {
+                        viewModel.processEvent(CharacterListEvents.OnCharacterClick(character))
+                    }
+                }
+            )
+
+            CharacterListEffects.Error -> TODO()
+            CharacterListEffects.Loading -> FullPageLoadingIndicator()
+            is CharacterListEffects.OpenCharacterDetail -> {
+                val effect = viewState.value as CharacterListEffects.OpenCharacterDetail
+                navHostController.navigate(Screen.CharacterScreen.createRoute(effect.character.id))
                 FullPageLoadingIndicator()
             }
 
-            ListState.PAGINATING -> {
-
-                CharacterList(characters = list)
-
-            }
-
-            else -> {}
+            CharacterListEffects.Paginating -> CharacterList(
+                modifier = Modifier.padding(
+                    paddingValues
+                ), characters = characters, paginating = true
+            )
         }
     }
 }
@@ -82,15 +84,21 @@ fun CharacterListScreen(
 @Composable
 fun CharacterList(
     modifier: Modifier = Modifier,
-    characters: List<Character>
+    characters: List<Character>,
+    onEndReached: () -> Unit = {},
+    onCharacterClick: (Character) -> Unit = {},
+    paginating: Boolean = false
 ) {
+    val lazyGridState = rememberLazyGridState()
+
     LazyVerticalGrid(
-        columns = GridCells.Adaptive(150.dp),
+        columns = GridCells.Adaptive(sizing.minCardWidth),
         horizontalArrangement = Arrangement.SpaceAround,
         modifier = modifier
-            .background(MaterialTheme.colorScheme.secondaryContainer)
-            .padding(8.dp),
-        state = rememberLazyGridState()
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(sizing.spacingS),
+        state = lazyGridState,
     ) {
         items(characters.size) {
             CharacterItem(
@@ -99,28 +107,32 @@ fun CharacterList(
                     start = sizing.spacingXXS,
                     end = sizing.spacingXXS
                 ),
-                character = characters[it]
+                character = characters[it],
+                onClickListener = { onCharacterClick(characters[it]) }
             )
         }
+    }
+
+    InfiniteListHandler(paginating, lazyGridState) {
+        onEndReached()
     }
 }
 
 @Composable
 fun CharacterItem(
-    modifier: Modifier,
-    character: Character
+    modifier: Modifier, character: Character,
+    onClickListener: () -> Unit = {}
 ) {
     Card(
-        modifier = modifier,
-        border = BorderStroke(sizing.spacingXXS, MaterialTheme.colorScheme.primaryContainer),
-        elevation = CardDefaults.cardElevation()
+        modifier = modifier.padding(sizing.borderWidth),
+        border = BorderStroke(sizing.borderWidth, MaterialTheme.colorScheme.onSecondaryContainer),
+        onClick = onClickListener
     ) {
         Column(
             modifier = Modifier
                 .aspectRatio(9 / 16f)
                 .background(
-                    MaterialTheme.colorScheme.primaryContainer,
-                    RoundedCornerShape(sizing.spacingM)
+                    MaterialTheme.colorScheme.background, RoundedCornerShape(sizing.spacingM)
                 )
         ) {
             Row(
@@ -137,6 +149,7 @@ fun CharacterItem(
                     contentDescription = character.name,
                     modifier = Modifier
                         .fillMaxSize()
+                        .border(sizing.borderWidth, MaterialTheme.colorScheme.onSecondaryContainer)
                         .clip(
                             RoundedCornerShape(
                                 topStart = sizing.spacingS,
@@ -154,12 +167,17 @@ fun CharacterItem(
             ) {
                 Text(
                     text = character.name,
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.W600,
                     color = MaterialTheme.colorScheme.onSecondaryContainer,
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(start = sizing.spacingM, end = sizing.spacingM, top = sizing.spacingS, bottom = sizing.spacingXS)
+                        .padding(
+                            start = sizing.spacingM,
+                            end = sizing.spacingM,
+                            top = sizing.spacingXXS,
+                            bottom = sizing.spacingXS
+                        )
                 )
             }
         }
