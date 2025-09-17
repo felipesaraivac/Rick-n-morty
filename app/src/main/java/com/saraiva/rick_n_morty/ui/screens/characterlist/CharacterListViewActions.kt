@@ -22,11 +22,13 @@ data class CharacterListState(
 
 sealed class CharacterListEffects {
     data class OpenCharacterDetail(val character: Int) : CharacterListEffects()
+    object Backpress : CharacterListEffects()
 }
 
 sealed class CharacterListEvents {
     object LoadCharacters : CharacterListEvents()
     object LoadMoreCharacters : CharacterListEvents()
     object ResetState : CharacterListEvents()
+    object OnBackpress: CharacterListEvents()
     data class OnCharacterClick(val character: Character) : CharacterListEvents()
 }

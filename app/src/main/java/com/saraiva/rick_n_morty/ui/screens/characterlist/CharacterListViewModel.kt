@@ -59,6 +59,10 @@ class CharacterListViewModel @Inject constructor(
                 CharacterListEvents.ResetState -> {
                     resetState()
                 }
+
+                CharacterListEvents.OnBackpress -> {
+                    _effect.emit(CharacterListEffects.Backpress)
+                }
             }
         }
     }

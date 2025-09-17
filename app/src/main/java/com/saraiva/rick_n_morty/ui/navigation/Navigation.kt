@@ -39,7 +39,9 @@ fun SetupNavController(navController: NavHostController) {
             arguments = listOf(navArgument("characterId") { type = NavType.IntType }),
             deepLinks = listOf(navDeepLink<Int>(basePath = "${deeplinkUri}character/{characterId}"))
         ) {
-            CharacterDetailsScreen()
+            CharacterDetailsScreen(
+                navController = navController,
+            )
         }
     }
 }
