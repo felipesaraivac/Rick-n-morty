@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -26,10 +27,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
@@ -46,8 +49,7 @@ import java.util.Locale
 
 @Composable
 fun CharacterDetailsScreen(
-    navHostController: NavHostController,
-    viewModel: CharacterDetailsViewModel
+    navHostController: NavHostController, viewModel: CharacterDetailsViewModel
 ) {
     val state = viewModel.state.collectAsStateWithLifecycle()
 
@@ -58,8 +60,7 @@ fun CharacterDetailsScreen(
                 CharacterSection(
                     modifier = Modifier.padding(
                         paddingValues
-                    ),
-                    viewState = character
+                    ), viewState = character
                 )
             }
 
@@ -79,27 +80,25 @@ fun CharacterSection(modifier: Modifier, viewState: CharacterDetailsState) {
             .padding(sizing.spacingS),
     ) {
         Card(
-            modifier = Modifier
-                .fillMaxSize(),
-            border = BorderStroke(sizing.borderWidth, MaterialTheme.colorScheme.onSecondaryContainer),
+            modifier = Modifier.fillMaxSize(),
+            border = BorderStroke(
+                sizing.borderWidth, MaterialTheme.colorScheme.onSecondaryContainer
+            ),
         ) {
 
             CharacterHeader(
-                modifier = Modifier,
-                character = viewState.character
+                modifier = Modifier, character = viewState.character
             )
 
             InfoTable(
-                modifier = Modifier,
-                list = listOf(
+                modifier = Modifier, list = listOf(
                     stringResource(R.string.origin) to viewState.character.origin.name,
                     stringResource(R.string.status) to viewState.character.status
                 )
             )
 
             EpisodeList(
-                modifier = Modifier,
-                episodes = viewState.episode
+                modifier = Modifier, episodes = viewState.episode
             )
         }
     }
@@ -119,9 +118,7 @@ fun CharacterHeader(
         verticalArrangement = Arrangement.SpaceEvenly
     ) {
         AsyncImage(
-            model = ImageRequest.Builder(LocalContext.current)
-                .data(character.image)
-                .crossfade(true)
+            model = ImageRequest.Builder(LocalContext.current).data(character.image).crossfade(true)
                 .build(),
             contentDescription = character.name,
             contentScale = ContentScale.Crop,
@@ -129,9 +126,7 @@ fun CharacterHeader(
                 .size(sizing.profilePictureSize)
                 .clip(CircleShape)
                 .border(
-                    sizing.borderWidth,
-                    MaterialTheme.colorScheme.onSecondaryContainer,
-                    CircleShape
+                    sizing.borderWidth, MaterialTheme.colorScheme.onSecondaryContainer, CircleShape
                 )
                 .background(MaterialTheme.colorScheme.primaryContainer, CircleShape)
         )
@@ -157,8 +152,7 @@ fun CharacterHeader(
 
 @Composable
 fun EpisodeList(
-    modifier: Modifier = Modifier,
-    episodes: List<Episode>
+    modifier: Modifier = Modifier, episodes: List<Episode>
 ) {
     Column(
         modifier = modifier
@@ -179,31 +173,40 @@ fun EpisodeList(
         ) {
             itemsIndexed(episodes) { index, episode ->
                 Card(
-                    modifier = Modifier,
-                    border = BorderStroke(sizing.borderWidth, MaterialTheme.colorScheme.onSecondaryContainer),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = sizing.spacingXXS),
                     colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.background
+                        containerColor = MaterialTheme.colorScheme.onSecondaryContainer
                     ),
-                    elevation = CardDefaults.cardElevation(
-                        defaultElevation = sizing.spacingXS,
-                        pressedElevation = sizing.spacingXS,
-                        hoveredElevation = sizing.spacingXS,
-                        focusedElevation = sizing.spacingXS
-                    )
+                    shape = MaterialTheme.shapes.medium
                 ) {
-                    Box(
-                        contentAlignment = Alignment.CenterStart,
-                        modifier = Modifier.fillMaxSize()
+                    Card(
+                        modifier = Modifier.padding(bottom = sizing.spacingXS, end = sizing.spacingXXS),
+                        border = BorderStroke(
+                            sizing.borderWidth, MaterialTheme.colorScheme.onSecondaryContainer
+                        ),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.background
+                        ),
                     ) {
-                        Text(
-                            text = "#${episode.id}: ${episode.name}",
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.W600,
-                            color = MaterialTheme.colorScheme.onSecondaryContainer,
-                            modifier = Modifier.padding(sizing.spacingM)
-                        )
+                        Box(
+                            contentAlignment = Alignment.CenterStart,
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            Text(
+                                text = "#${episode.id}: ${episode.name}",
+                                style = MaterialTheme.typography.bodyMedium,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                fontWeight = FontWeight.W600,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                modifier = Modifier.padding(sizing.spacingM)
+                            )
+                        }
                     }
                 }
+
             }
         }
     }

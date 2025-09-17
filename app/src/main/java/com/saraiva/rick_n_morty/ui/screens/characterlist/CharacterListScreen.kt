@@ -16,6 +16,8 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -26,6 +28,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import coil3.compose.AsyncImage
@@ -99,7 +102,7 @@ fun CharacterList(
 
     LazyVerticalGrid(
         columns = GridCells.Adaptive(sizing.minCardWidth),
-        horizontalArrangement = Arrangement.SpaceAround,
+        horizontalArrangement = Arrangement.spacedBy(sizing.spacingXS),
         verticalArrangement = Arrangement.spacedBy(sizing.spacingXS),
         modifier = modifier
             .fillMaxSize()
@@ -108,15 +111,24 @@ fun CharacterList(
         state = lazyGridState,
     ) {
         items(characters.size) {
-            CharacterItem(
-                modifier = Modifier.padding(
-                    bottom = sizing.spacingXS,
-                    start = sizing.spacingXXS,
-                    end = sizing.spacingXXS
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = sizing.spacingXXS, end = sizing.spacingXXS),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.onSecondaryContainer
                 ),
-                character = characters[it],
-                onClickListener = { onCharacterClick(characters[it]) }
-            )
+                shape = MaterialTheme.shapes.medium
+            ) {
+                CharacterItem(
+                    modifier = Modifier.padding(
+                        bottom = sizing.spacingXXS,
+                        end = sizing.spacingXXS
+                    ),
+                    character = characters[it],
+                    onClickListener = { onCharacterClick(characters[it]) }
+                )
+            }
         }
     }
 
@@ -132,7 +144,7 @@ fun CharacterItem(
 ) {
     Card(
         modifier = modifier.padding(sizing.borderWidth),
-        border = BorderStroke(sizing.borderWidth, MaterialTheme.colorScheme.onSecondaryContainer),
+//        border = BorderStroke(sizing.borderWidth, MaterialTheme.colorScheme.onSecondaryContainer),
         onClick = onClickListener
     ) {
         Column(
@@ -145,7 +157,7 @@ fun CharacterItem(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .fillMaxHeight(.8f)
+                    .fillMaxHeight(.75f)
             ) {
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
@@ -156,7 +168,6 @@ fun CharacterItem(
                     contentDescription = character.name,
                     modifier = Modifier
                         .fillMaxSize()
-                        .border(sizing.borderWidth, MaterialTheme.colorScheme.onSecondaryContainer)
                         .clip(
                             RoundedCornerShape(
                                 topStart = sizing.spacingS,
@@ -167,6 +178,7 @@ fun CharacterItem(
                         )
                 )
             }
+            HorizontalDivider(color = MaterialTheme.colorScheme.onSecondaryContainer, thickness = sizing.spacingXXS)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -175,7 +187,9 @@ fun CharacterItem(
                 Text(
                     text = character.name,
                     style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.W600,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    fontWeight = FontWeight.W700,
                     color = MaterialTheme.colorScheme.onSecondaryContainer,
                     modifier = Modifier
                         .fillMaxSize()
@@ -183,7 +197,7 @@ fun CharacterItem(
                             start = sizing.spacingM,
                             end = sizing.spacingM,
                             top = sizing.spacingXXS,
-                            bottom = sizing.spacingXS
+                            bottom = sizing.spacingXXS
                         )
                 )
             }
