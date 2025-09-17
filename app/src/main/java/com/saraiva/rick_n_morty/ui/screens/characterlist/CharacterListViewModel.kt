@@ -10,8 +10,12 @@ import com.saraiva.rick_n_morty.data.CharacterRepository
 import com.saraiva.rick_n_morty.data.model.Character
 import com.saraiva.rick_n_morty.ui.state.ListState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -23,8 +27,8 @@ class CharacterListViewModel @Inject constructor(
     private var _state = MutableStateFlow(CharacterListState.initial())
     val state: StateFlow<CharacterListState> get() = _state
 
-    private var _effect = MutableStateFlow<CharacterListEffects>(CharacterListEffects.NoOP)
-    val effect: StateFlow<CharacterListEffects> get() = _effect
+    val effect = MutableSharedFlow<CharacterListEffects>()
+//    val effect: StateFlow<CharacterListEffects> get() = _effect
 
     private val _characters = mutableStateListOf<Character>()
 
@@ -52,7 +56,7 @@ class CharacterListViewModel @Inject constructor(
                 }
 
                 is CharacterListEvents.OnCharacterClick -> {
-                    _effect.emit(CharacterListEffects.OpenCharacterDetail(event.character.id))
+                    effect.emit(CharacterListEffects.OpenCharacterDetail(event.character.id))
                 }
 
                 CharacterListEvents.ResetState -> {
@@ -78,13 +82,20 @@ class CharacterListViewModel @Inject constructor(
                 page.intValue++
                 listState.value = ListState.IDLE
                 hasMore.value = pageData.hasMore
-                _state.emit(_state.value.copy(_characters, isLoading = false, isPaginating = false))
+                _state.emit(
+                    _state.value
+                        .copy(
+                            _characters,
+                            isLoading = false,
+                            isPaginating = false,
+                            hasMore = hasMore.value
+                        )
+                )
             }
         }
     }
 
     fun resetState() = viewModelScope.launch {
         _state.emit(_state.value.copy(isLoading = false, isPaginating = false, isError = false))
-        _effect.emit(CharacterListEffects.NoOP)
     }
 }

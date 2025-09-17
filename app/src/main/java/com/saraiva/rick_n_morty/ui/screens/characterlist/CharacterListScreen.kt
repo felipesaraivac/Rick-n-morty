@@ -27,6 +27,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import coil3.compose.AsyncImage
@@ -39,22 +40,22 @@ import com.saraiva.rick_n_morty.ui.navigation.Screen
 import com.saraiva.rick_n_morty.ui.theme.sizing
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 @Composable
 fun CharacterListScreen(
-    navHostController: NavHostController, viewModel: CharacterListViewModel
+    navHostController: NavHostController, viewModel: CharacterListViewModel = hiltViewModel()
 ) {
 
     val viewState = viewModel.state.collectAsStateWithLifecycle()
 
-    val effects = viewModel.effect.collectAsStateWithLifecycle()
+    val effects = viewModel.effect.collectAsStateWithLifecycle(null)
 
     LaunchedEffect(effects.value) {
         val characterId = (effects.value as? CharacterListEffects.OpenCharacterDetail)?.character
             ?: return@LaunchedEffect
             navHostController.navigate(Screen.CharacterScreen.createRoute(characterId))
-            viewModel.processEvent(CharacterListEvents.ResetState)
     }
 
     Scaffold { paddingValues ->
@@ -85,7 +86,8 @@ fun CharacterList(
     characters: List<Character>,
     onEndReached: () -> Unit = {},
     onCharacterClick: (Character) -> Unit = {},
-    paginating: Boolean = false
+    paginating: Boolean = false,
+    hasMore: Boolean = true,
 ) {
     val lazyGridState = rememberLazyGridState()
 
@@ -121,8 +123,10 @@ fun CharacterList(
         }
     }
 
-    InfiniteListHandler(paginating, lazyGridState) {
-        onEndReached()
+    if (hasMore) {
+        InfiniteListHandler(paginating, lazyGridState) {
+            onEndReached()
+        }
     }
 }
 
@@ -133,7 +137,6 @@ fun CharacterItem(
 ) {
     Card(
         modifier = modifier.padding(sizing.borderWidth),
-//        border = BorderStroke(sizing.borderWidth, MaterialTheme.colorScheme.onSecondaryContainer),
         onClick = onClickListener
     ) {
         Column(

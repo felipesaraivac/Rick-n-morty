@@ -1,4 +1,4 @@
-package com.saraiva.rick_n_morty.di
+package com.saraiva.rick_n_morty.data.di
 
 import com.saraiva.rick_n_morty.data.CharacterRepository
 import com.saraiva.rick_n_morty.data.core.Constants

@@ -1,11 +1,11 @@
 package com.saraiva.rick_n_morty.data.model
 
-import kotlinx.serialization.Serializable
+import com.google.gson.annotations.SerializedName
 
-@Serializable
 data class Episode(
     val id: Int,
     val name: String,
-    val air_date: String,
+    @SerializedName("air_date")
+    val airDate: String,
     val episode: String,
 )

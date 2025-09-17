@@ -6,21 +6,22 @@ data class CharacterListState(
     val characters: List<Character> = emptyList(),
     val isLoading: Boolean,
     val isPaginating: Boolean,
-    val isError: Boolean
+    val isError: Boolean,
+    val hasMore: Boolean
 ) {
     companion object {
         fun initial() = CharacterListState(
             characters = emptyList(),
             isLoading = true,
             isPaginating = false,
-            isError = false
+            isError = false,
+            hasMore = true
         )
     }
 }
 
 sealed class CharacterListEffects {
     data class OpenCharacterDetail(val character: Int) : CharacterListEffects()
-    object NoOP : CharacterListEffects()
 }
 
 sealed class CharacterListEvents {

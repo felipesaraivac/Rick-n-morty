@@ -28,6 +28,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import coil3.compose.AsyncImage
@@ -42,9 +43,7 @@ import com.saraiva.rick_n_morty.ui.theme.sizing
 import java.util.Locale
 
 @Composable
-fun CharacterDetailsScreen(
-    navHostController: NavHostController, viewModel: CharacterDetailsViewModel
-) {
+fun CharacterDetailsScreen(viewModel: CharacterDetailsViewModel = hiltViewModel()) {
     val state = viewModel.state.collectAsStateWithLifecycle()
 
     Scaffold { paddingValues ->

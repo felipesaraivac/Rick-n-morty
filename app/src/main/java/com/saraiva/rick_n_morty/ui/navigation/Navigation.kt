@@ -34,7 +34,6 @@ fun SetupNavController(navController: NavHostController) {
         ) {
             CharacterListScreen(
                 navHostController = navController,
-                hiltViewModel<CharacterListViewModel>()
             )
         }
 
@@ -43,10 +42,7 @@ fun SetupNavController(navController: NavHostController) {
             arguments = listOf(navArgument("characterId") { type = NavType.IntType }),
             deepLinks = listOf(navDeepLink<Int>(basePath = "${deeplinkUri}character/{characterId}"))
         ) {
-            CharacterDetailsScreen(
-                navHostController = navController,
-                viewModel = hiltViewModel<CharacterDetailsViewModel>()
-            )
+            CharacterDetailsScreen()
         }
     }
 }
